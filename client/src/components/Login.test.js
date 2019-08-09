@@ -22,5 +22,5 @@ it("submit clicked and submitted", () => {
   fireEvent.click(submitButton);
 
   // Test if on click of submit button nothing is displayed because username and password inputs are not filed
-  getByText(/Recipes/);
+  getByText(/Name/);
 });
