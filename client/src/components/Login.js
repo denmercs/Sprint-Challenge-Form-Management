@@ -1,85 +1,65 @@
 import React, { useState, useEffect } from "react";
+import LoginCard from "./LoginCard";
 import axios from "axios";
 import { Form, Field, withFormik } from "formik";
 import * as Yup from "yup";
 
-const Login = ({ status, errors, touched }) => {
+const LoginForm = ({ errors, touched }) => {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    if (status) {
-      setUsers([...users, status]);
-    }
-  }, [status]);
+    axios
+      .get("http://localhost:5000/api/restricted/data")
+      .then(res => setUsers(res.data));
+  }, []);
 
   return (
-    <>
-      <h1>Login Form</h1>
+    <div className="user-form">
+      <h1>Form</h1>
       <Form>
-        <div>
-          <label>Username: </label>
-          <Field
-            className="inputField"
-            name="username"
-            type="text"
-            placeholder="User Name"
-          />
-          {touched.username && errors.username && (
-            <p className="error">{errors.username}</p>
-          )}
+        <Field type="text" name="username" placeholder="username" />
+        {touched.username && errors.username && (
+          <p className="error">{errors.email}</p>
+        )}
+        <Field type="password" name="password" placeholder="password" />
+        {touched.password && errors.password && (
+          <p className="error">{errors.password}</p>
+        )}
+
+        <button type="submit">SignUp</button>
+        <div className="cardContainter">
+          {users.map(user => (
+            <LoginCard
+              key={user.name}
+              name={user.name}
+              course={user.course}
+              technique={user.technique}
+            />
+          ))}
         </div>
-        <div>
-          <label>Password: </label>
-          <Field
-            className="inputField"
-            name="password"
-            type="password"
-            placeholder="Password"
-          />
-          {touched.password && errors.password && (
-            <p className="error">{errors.password}</p>
-          )}
-        </div>
-        <button type="submit">Submit</button>
       </Form>
-    </>
+    </div>
   );
 };
 
-const FormikLoginFOrm = withFormik({
-  mapPropsToValues({ username, password }) {
+const FormikLoginForm = withFormik({
+  mapPropstoValues(values) {
     return {
-      username: username || "",
-      password: password || "",
-      users: ["users"]
+      username: values.username || "",
+      password: values.password || ""
     };
   },
 
-  handleSubmit(values, { setStatus, resetForm }) {
-    axios
-      .post("http://localhost:5000/api/register ", {
-        username: values.username,
-        password: values.password
-      })
-      .then(res => {
-        console.log(res.data);
-      })
-      .catch(err => console.log(err.response));
-
-    axios
-      .get("http://localhost:5000/api/restricted/data")
-      .then(res => {
-        setStatus(res.data);
-      })
-      .catch(err => console.log(err.response));
-  },
-
   validationSchema: Yup.object().shape({
-    username: Yup.string().required("Username is required"),
-    password: Yup.string()
-      .min(6)
-      .required("Password is required")
-  })
-})(Login);
+    username: Yup.string().required("nope"),
+    password: Yup.string().required("nope")
+  }),
 
-export default FormikLoginFOrm;
+  handleSubmit(values) {
+    axios
+      .post("http://localhost:5000/api/register/", values)
+      .then(res => console.log(res))
+      .catch(err => console.log(err));
+  }
+})(LoginForm);
+export default FormikLoginForm;
